@@ -10,8 +10,20 @@ Meteor.startup(() => {
   });
 });
 
+function onRoute(req, res, next) {
+  const link = Links.findOne({ token: req.params.token });
+
+  if (link) {
+    Links.update(link, { $inc: {clicks: 1}})
+    res.writeHead(307, { 'Location': link.url });
+    res.end();
+  } else {
+    next();
+  }
+}
+
 const middleware = ConnectRoute(function(router) {
-  router.get('/:token', (req) => console.log(req));
+  router.get('/:token', onRoute);
 });
 
 WebApp.connectHandlers.use(middleware);
